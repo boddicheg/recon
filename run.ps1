@@ -1,4 +1,4 @@
-docker rm --force pentester
-docker build -t pentester .
-docker run --name pentester --rm -p 8079:8079 -d pentester
-docker exec -it pentester //bin//sh
+docker rm --force recon
+docker build -t recon .
+docker run --name recon --rm -p 1337:1337 -d -v assets:/usr/src/recon/assets recon
+docker exec -it recon //bin//sh 

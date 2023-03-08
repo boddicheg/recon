@@ -1,3 +1,5 @@
+import os
+import json
 from bottle import route, run, request, response
 
 from modules.SyncScanUtils import *
@@ -47,4 +49,4 @@ def example():
 
 #-----------------------------------------------
 if __name__ == '__main__':
-    run(host='localhost', port=1337, debug=True)
+    run(host='0.0.0.0', port=1337, debug=True)

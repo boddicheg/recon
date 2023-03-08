@@ -1,3 +1,1 @@
-src/modules/__pycache__/__init__.cpython-311.pyc
-src/modules/__pycache__/SyncScanUtils.cpython-311.pyc
-src/modules/__pycache__/WafDetector.cpython-311.pyc
+*.pyc

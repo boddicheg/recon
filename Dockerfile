@@ -15,4 +15,4 @@ COPY app.py .
 COPY packages.list .
 RUN pip3 install --no-cache-dir -r packages.list
 
-CMD python3 -m http.server 8079
+CMD python3 app.py
