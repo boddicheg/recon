@@ -1,0 +1,3 @@
+[submodule "assets/wl"]
+	path = assets/wl
+	url = https://github.com/YaS5in3/Bug-Bounty-Wordlists.git

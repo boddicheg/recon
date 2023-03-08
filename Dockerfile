@@ -8,8 +8,11 @@ RUN apk add gcc musl-dev curl-dev openssl-dev python3-dev
 
 RUN pip install --upgrade pip
 
-WORKDIR /usr/src/theeyev2
-COPY src/ .
+WORKDIR /usr/src/recon
+COPY assets/ assets/
+COPY modules/ modules/
+COPY app.py .
+COPY packages.list .
 RUN pip3 install --no-cache-dir -r packages.list
 
 CMD python3 -m http.server 8079
