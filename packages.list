@@ -5,3 +5,7 @@ geoip2
 python3-nmap
 python-whois
 bottle
+whois
+dnspython
+pydig
+notebook
