@@ -2,11 +2,12 @@ version: '3.8'
 services:
   web:
     build: .
+    container_name: recon
     restart: always
     ports:
-    - "3003:8888"
-    # volumes:
-    #   - "/srv/docker-data/DBS/jupiter:/home/jovyan"
+    - "3123:8888"
+    volumes:
+      - "/srv/docker-data/DBS/recon_data:/root"
     cap_add:
       - NET_ADMIN
     devices:
