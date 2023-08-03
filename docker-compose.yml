@@ -5,9 +5,9 @@ services:
     container_name: recon
     restart: always
     ports:
-    - "8888:8888"
-    # volumes:
-    #   - "/srv/docker-data/DBS/recon_data:/root"
+      - "8888:8888"
+    volumes:
+      - "/srv/docker-data/DBS/recon_data:/root"
     cap_add:
       - NET_ADMIN
     devices:
