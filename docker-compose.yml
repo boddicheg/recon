@@ -7,7 +7,7 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - "/srv/docker-data/DBS/recon_data:/root"
+      - "/srv/docker-data/DBS/recon_data:/root/recon"
     cap_add:
       - NET_ADMIN
     devices:
