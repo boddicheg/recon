@@ -46,14 +46,14 @@ RUN \
     pip install -r /tmp/packages.list --break-system-packages
 
 # Copy sources
-WORKDIR /root
-RUN \
-    mkdir -p recon/assets
-COPY src/ recon/
+WORKDIR /root/
 
 RUN \
-    git clone --depth 1 https://github.com/danielmiessler/SecLists.git recon/assets/wordlists
+    git clone --depth 1 https://github.com/boddicheg/recon.git /root/recon
+
+RUN \
+    git clone --depth 1 https://github.com/danielmiessler/SecLists.git /root/recon/src/assets/wordlists
 
 # Run jupiter
 EXPOSE 8888
-CMD ["jupyter", "notebook", "--ip='0.0.0.0'", "--port=8888", "--allow-root", "--notebook-dir=/root"]
+CMD ["jupyter", "server", "--ip='0.0.0.0'", "--port=8888", "--allow-root", "--notebook-dir=/root"]
