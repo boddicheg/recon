@@ -6,8 +6,9 @@ services:
     restart: always
     ports:
       - "8888:8888"
+      - "8889:80"
     volumes:
-      - "/srv/docker-data/DBS/recon_data:/root/recon"
+      - "C:\\workspace\\recon\\notebook:/root/recon"
     cap_add:
       - NET_ADMIN
     devices:

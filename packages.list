@@ -1,13 +1,12 @@
-sqlmap
 wfuzz
 wafw00f
 geoip2
 python3-nmap
 python-whois
-bottle
-whois
 dnspython
 pydig
-notebook
-jupyterlab-git
 impacket
+redis
+jupyterlab
+jupyter-resource-usage
+mysql-connector-python
