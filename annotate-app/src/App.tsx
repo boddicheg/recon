@@ -1,13 +1,13 @@
 import "./index.css";
-import Header from "./components/HeaderComponent";
-import Dashboard from "./components/DashboardComponent";
-import Projects from "./components/ProjectsComponent";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Header from "./components/Header.tsx";
+import Dashboard from "./components/Dashboard.tsx";
+import Projects from "./components/Projects.tsx";
+import { HashRouter , Route, Routes } from "react-router-dom";
 
 function App() {
   return (
     <>
-      <Router>
+      <HashRouter>
         <div className="min-h-full">
           <Header />
           <main>
@@ -19,7 +19,7 @@ function App() {
             </div>
           </main>
         </div>
-      </Router>
+      </HashRouter>
     </>
   );
 }
