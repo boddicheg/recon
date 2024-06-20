@@ -5,3 +5,4 @@ backend/static/assets/*.svg
 backend/static/*.svg
 backend/static/*.html
 backend/templates/*.html
+annotate-app/package-lock.json
