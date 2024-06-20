@@ -5,13 +5,20 @@ import { normalizePath } from 'vite'
 import { fileURLToPath } from 'url';
 import path from 'path';
 
+import dns from 'dns'
+
+dns.setDefaultResultOrder('verbatim')
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
+    react({
+      // Add this line
+      include: "**/*.jsx",
+    }),
     viteStaticCopy({
       targets: [
         { src: 'dist/index.html', dest: '../../backend/templates' },
@@ -20,6 +27,7 @@ export default defineConfig({
     }),
   ],
   build: {
+    watch: './vite.config.js',
     outDir: 'dist',
     rollupOptions: {
       input: {
