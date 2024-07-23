@@ -16,10 +16,17 @@ class Projects(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     uuid = Column(String, nullable=False)
+    target = Column(String, nullable=False)
     description = Column(String)
     resources = Column(Integer, nullable=False)
     date_updated = Column(String, nullable=False)
 
+class Commands(Base):
+    __tablename__ = 'commands'
+    id = Column(Integer, primary_key=True)
+    uuid = Column(String, nullable=False)
+    project_uuid = Column(String, nullable=False)
+    command = Column(String, nullable=False)
 # -----------------------------------------------------------------------------
     
 class DBSession:
@@ -46,6 +53,7 @@ class DBSession:
         self.session.add(Projects(
             uuid=str(uuid.uuid4()),  
             name=data["name"],
+            target=data["target"],
             description=data["description"],
             resources=0,
             date_updated=datetime.datetime.now()
@@ -58,6 +66,7 @@ class DBSession:
             result.append({
                 "uuid": project.uuid,
                 "name": project.name,
+                "target": project.target,
                 "description": project.description,
                 "resources": project.resources,
                 "date_updated": project.date_updated

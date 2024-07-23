@@ -2,6 +2,7 @@ import "./index.css";
 import Header from "./components/Header.tsx";
 import Dashboard from "./components/Dashboard.tsx";
 import Projects from "./components/Projects.tsx";
+import Project from "./components/Project.tsx";
 import { HashRouter , Route, Routes } from "react-router-dom";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/projects" element={<Projects />} />
+                <Route path="/project/:uuid" element={<Project />} />
               </Routes>
             </div>
           </main>

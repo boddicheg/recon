@@ -38,6 +38,18 @@ def api_projects_add():
     return jsonify({
         "message": "Added successfully"
     }), 200
+    
+@app.route('/api/project/<uuid>', methods=['GET'])
+def api_project_get(uuid):
+    print(uuid)
+    return jsonify({
+        "name": "HTB site",
+        "uuid": uuid,
+        "commands": [
+            "nmap {project_target} -sn",
+            "nmap {project_target} -sV",
+        ]
+    }), 200
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=3333)

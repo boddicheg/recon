@@ -12,6 +12,7 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ onAddProject }) => {
   const [response, setResponse] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [name, setName] = useState<string>("");
+  const [target, setTarget] = useState<string>("");
   const [description, setDescription] = useState<string>("");
 
   const handleOpenModal = () => {
@@ -29,7 +30,7 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ onAddProject }) => {
     setError("");
     setResponse("");
 
-    const data = { name, description };
+    const data = { name, target, description };
 
     try {
       await sendAddNewProject(data);
@@ -58,10 +59,10 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ onAddProject }) => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
-                htmlFor="email"
+                htmlFor="name"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Name
+                Name:
               </label>
               <div className="mt-2">
                 <input
@@ -77,10 +78,29 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ onAddProject }) => {
             </div>
             <div>
               <label
+                htmlFor="target"
+                className="block text-sm font-medium leading-6 text-gray-900"
+              >
+                Target(IP or hostname):
+              </label>
+              <div className="mt-2">
+                <input
+                  id="target"
+                  name="target"
+                  type="text"
+                  autoComplete="target"
+                  required
+                  onChange={(e) => setTarget(e.target.value)}
+                  className="block w-full rounded-md border-0 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                />
+              </div>
+            </div>
+            <div>
+              <label
                 htmlFor="description"
                 className="block text-sm font-medium leading-6 text-gray-900"
               >
-                Description
+                Description:
               </label>
               <div className="mt-2">
                 <input
