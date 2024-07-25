@@ -27,40 +27,123 @@ interface ApiResponse {
   message: string;
 }
 
-export const sendAddNewProject = async (data: NewProjectData): Promise<ApiResponse> => {
-  const response = await fetch('/api/projects', {
-    method: 'POST',
+export const sendAddNewProject = async (
+  data: NewProjectData
+): Promise<ApiResponse> => {
+  const response = await fetch("/api/projects", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
   });
 
   if (!response.ok) {
-    throw new Error('Network response was not ok');
+    throw new Error("Network response was not ok");
   }
 
   return response.json();
 };
+
+export interface Commands {
+  uuid: string;
+  command: string;
+  output: string
+}
 
 export interface ProjectCommands {
   name: string;
   uuid: string;
-  commands: string[];
+  commands: Commands[];
 }
 
-export const getProjectCommands = async (uuid: string | undefined): Promise<ProjectCommands> => {
+export const getProjectCommands = async (
+  uuid: string | undefined
+): Promise<ProjectCommands> => {
   if (!uuid) {
-    throw new Error('Empty uuid! Request to /api/project/ cancelled');
+    throw new Error("Empty uuid! Request to /api/project/ cancelled");
   }
 
-  const response = await fetch('/api/project/' + uuid, {
-    method: 'GET'
+  const response = await fetch("/api/project/" + uuid, {
+    method: "GET",
   });
 
   if (!response.ok) {
-    throw new Error('Network response was not ok');
+    throw new Error("Network response was not ok");
   }
 
   return response.json();
 };
+
+export const addProjectCommand = async (
+  uuid: string | undefined,
+  command: string
+): Promise<ApiResponse> => {
+  const response = await fetch("/api/project/" + uuid, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({command: command}),
+  });
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+};
+
+export const startCommandExecution = async (
+  uuid: string | undefined
+): Promise<ApiResponse> => {
+  if (!uuid) {
+    throw new Error("Empty uuid! Request to /api/command/ cancelled");
+  }
+
+  const response = await fetch("/api/command/" + uuid + "/start", {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+}
+
+export const stopCommandExecution = async (
+  uuid: string | undefined
+): Promise<ApiResponse> => {
+  if (!uuid) {
+    throw new Error("Empty uuid! Request to /api/command/ cancelled");
+  }
+
+  const response = await fetch("/api/command/" + uuid + "/stop", {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+}
+
+export const deleteCommandData = async (
+  uuid: string | undefined
+): Promise<ApiResponse> => {
+  if (!uuid) {
+    throw new Error("Empty uuid! Request to /api/command/ cancelled");
+  }
+
+  const response = await fetch("/api/command/" + uuid, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+}

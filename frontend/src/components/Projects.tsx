@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import moment from 'moment';
-import { useNavigate } from 'react-router-dom';
+import moment from "moment";
+import { useNavigate } from "react-router-dom";
 
-import AddProjectModal from './AddProjectModal';
+import AddProjectModal from "./AddProjectModal";
 import { fetchProjects, ProjectsInterface } from "../services/Api";
 
 export const ProjectsList = ({
@@ -10,21 +10,20 @@ export const ProjectsList = ({
 }: {
   projects?: Array<ProjectsInterface>;
 }) => {
-
   const navigate = useNavigate();
 
   const navigateTo = (uuid: string) => {
     navigate(`/project/${uuid}`);
   };
 
-
   return (
     <div>
       {projects &&
         projects?.map((project) => (
-          <li 
+          <li
             onClick={() => navigateTo(project.uuid)}
-            className="flex justify-between gap-x-6 py-3 px-3 my-4 border border-slate-100 bg-slate-50 shadow-md rounded hover:shadow-lg cursor-pointer">
+            className="flex justify-between gap-x-6 py-3 px-3 my-4 border border-slate-100 bg-slate-50 shadow-md rounded hover:shadow-lg cursor-pointer"
+          >
             <div className="flex min-w-0 gap-x-4">
               <div className="min-w-0 content-center ">
                 <svg
@@ -33,12 +32,12 @@ export const ProjectsList = ({
                   viewBox="0 0 24 24"
                   strokeWidth={1.5}
                   stroke="currentColor"
-                  className="size-8 fill-indigo-500 stroke-indigo-700"
+                  className="size-8 stroke-indigo-700"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d="m9 13.5 3 3m0 0 3-3m-3 3v-6m1.06-4.19-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
+                    d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418"
                   />
                 </svg>
               </div>
@@ -52,7 +51,6 @@ export const ProjectsList = ({
               </div>
             </div>
             <div className="inline-flex">
-
               <div className="hidden shrink-0 sm:flex sm:flex-col sm:items-end inline-flex">
                 <p className="text-sm leading-6 text-gray-900">
                   Commands: {project?.resources}
@@ -90,23 +88,23 @@ const Projects: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const getProjects = async () => {
-	try {
-	  const data = await fetchProjects();
-	  setProjects(data);
-	} catch (err) {
-	  if (err instanceof Error) {
-		setError(err.message);
-	  } else {
-		setError("An unexpected error occurred");
-	  }
-	} finally {
-	  setLoading(false);
-	}
+    try {
+      const data = await fetchProjects();
+      setProjects(data);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onAddProject = (message: string) => {
-    console.log(message)
-	getProjects();
+    console.log(message);
+    getProjects();
   };
 
   useEffect(() => {
@@ -129,7 +127,7 @@ const Projects: React.FC = () => {
             Projects
           </h2>
           <span className="sm:ml-3">
-			<AddProjectModal onAddProject={onAddProject} />
+            <AddProjectModal onAddProject={onAddProject} />
           </span>
         </div>
       </header>

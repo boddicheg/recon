@@ -11,3 +11,15 @@ class ProjectsController():
     
     def add_project(self, data):
         return self.database.add_project(data)
+    
+    def get_project(self, uuid):
+        return self.database.get_project_data(uuid)
+    
+    def get_project_cmds(self, uuid):
+        return self.database.get_project_cmds(uuid)
+    
+    def add_command(self, uuid, command):
+        return self.database.add_project_cmd({
+            "command": command,
+            "project_uuid": uuid
+        })

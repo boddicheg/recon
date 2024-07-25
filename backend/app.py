@@ -38,17 +38,41 @@ def api_projects_add():
     return jsonify({
         "message": "Added successfully"
     }), 200
-    
+
 @app.route('/api/project/<uuid>', methods=['GET'])
-def api_project_get(uuid):
-    print(uuid)
+def api_project_get_cmds(uuid):
+    commands = g_projects.get_project_cmds(uuid)
+    project = g_projects.get_project(uuid)
+
     return jsonify({
-        "name": "HTB site",
-        "uuid": uuid,
-        "commands": [
-            "nmap {project_target} -sn",
-            "nmap {project_target} -sV",
-        ]
+        "name": project["name"],
+        "uuid": project["uuid"],
+        "commands": commands
+    }), 200
+
+@app.route('/api/project/<uuid>', methods=['POST'])
+def api_project_add_cmd(uuid):
+    g_projects.add_command(uuid, request.get_json()["command"])
+    return jsonify({
+        "message": "Added successfully"
+    }), 200
+
+@app.route('/api/command/<uuid>/start', methods=['GET'])
+def api_project_cmd_start(uuid):
+    return jsonify({
+        "message": f"{uuid} started successfully"
+    }), 200
+    
+@app.route('/api/command/<uuid>/stop', methods=['GET'])
+def api_project_cmd_stop(uuid):
+    return jsonify({
+        "message": f"{uuid} stopped successfully"
+    }), 200
+
+@app.route('/api/command/<uuid>', methods=['DELETE'])
+def api_project_cmd_delete(uuid):
+    return jsonify({
+        "message": f"{uuid} deleted successfully"
     }), 200
 
 if __name__ == '__main__':

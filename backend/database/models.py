@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -27,6 +27,7 @@ class Commands(Base):
     uuid = Column(String, nullable=False)
     project_uuid = Column(String, nullable=False)
     command = Column(String, nullable=False)
+    output = Column(String, nullable=False)
 # -----------------------------------------------------------------------------
     
 class DBSession:
@@ -58,7 +59,20 @@ class DBSession:
             resources=0,
             date_updated=datetime.datetime.now()
         ))
-
+        
+        self.session.commit()
+        
+    def get_project_data(self, uuid):
+        data = self.session.query(Projects).filter_by(uuid=uuid).first()
+        
+        result = {
+            "name": data.name,
+            "uuid": data.uuid,
+            "target": data.target
+        }
+    
+        return result
+        
     def get_projects(self):
         projects = self.session.query(Projects).all()
         result = []
@@ -73,3 +87,29 @@ class DBSession:
             })
         return result
 # -----------------------------------------------------------------------------
+    def add_project_cmd(self, data):
+        keys = ["command", "project_uuid"]
+        for k in keys:
+            if k not in data.keys():
+                print(f"-> Can't find key {k} in params")
+                return
+
+        self.session.add(Commands(
+            uuid=str(uuid.uuid4()),  
+            project_uuid=data["project_uuid"],
+            command=data["command"],
+            output="Test Output"
+        ))
+        
+        self.session.commit()
+        
+    def get_project_cmds(self, project_uuid):
+        cmds = self.session.query(Commands).filter_by(project_uuid=project_uuid).all()
+        result = []
+        for cmd in cmds:
+            result.append({
+                "uuid": cmd.uuid,
+                "command": cmd.command,
+                "output": cmd.output,
+            })
+        return result
