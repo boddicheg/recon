@@ -80,6 +80,7 @@ def api_project_cmd_output(uuid):
 
 @app.route('/api/command/<uuid>', methods=['DELETE'])
 def api_project_cmd_delete(uuid):
+    g_projects.detete_command(uuid)
     return jsonify({
         "message": f"{uuid} deleted successfully"
     }), 200

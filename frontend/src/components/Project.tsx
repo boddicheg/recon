@@ -43,6 +43,7 @@ const Project: React.FC = () => {
   const getProjectData = async (uuid: string | undefined) => {
     try {
       let data = await getProjectCommands(uuid);
+      console.log(data)
       setProject(data);
     } catch (err) {
       if (err instanceof Error) {
@@ -58,6 +59,10 @@ const Project: React.FC = () => {
   useEffect(() => {
     getProjectData(uuid);
   }, []);
+
+  const handleDeleteCommand = () => {
+    getProjectData(uuid);
+};
 
   return (
     <>
@@ -102,7 +107,7 @@ const Project: React.FC = () => {
           {project &&
             project.commands &&
             project.commands?.map((command) => (
-              <Command uuid={command.uuid} command={command.command}/>
+              <Command uuid={command.uuid} command={command.command} onDelete={handleDeleteCommand} />
             ))}
         </ul>
       </div>

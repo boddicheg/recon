@@ -6,6 +6,7 @@ import {
   CommandLineIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  ArrowPathIcon
 } from "@heroicons/react/24/outline";
 import {
   startCommandExecution,
@@ -15,7 +16,7 @@ import {
   getCommandOutput,
 } from "../services/Api";
 
-const Command: React.FC<CommandData> = ({ uuid, command }) => {
+const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
   const [output, setOutput] = useState<string>("");
   const [toggleStatus, setToggleStatus] = useState<boolean>(false);
   const execStatus = useRef<boolean>(false);
@@ -67,6 +68,7 @@ const Command: React.FC<CommandData> = ({ uuid, command }) => {
 
   const deleteCommand = async (uuid: string | undefined) => {
     await deleteCommandData(uuid);
+    onDelete();
   };
 
   const toggleOutput = () => {
@@ -90,6 +92,12 @@ const Command: React.FC<CommandData> = ({ uuid, command }) => {
         </div>
         <div className="flex-1 content-center  mr-4">
           <div className="flex justify-end gap-x-4">
+            {execStatus.current ? (
+              <ArrowPathIcon 
+                className="size-6 animate-spin"
+              />
+            ): null}
+
             <PlayIcon
               className="size-6 fill-green-400 stroke-green-600"
               onClick={() => startCommandProcessing(uuid)}

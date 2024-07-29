@@ -125,3 +125,9 @@ class DBSession:
                 "output": cmd.output,
             })
         return result
+    
+    def delete_project_cmd(self, uuid):
+        cms = self.session.query(Commands).filter_by(uuid=uuid).first()
+        if cms:
+            self.session.delete(cms)
+            self.session.commit()

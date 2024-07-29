@@ -6,7 +6,7 @@ import atexit
 import subprocess
 
 DB_PATH = "db.sqlite"
-TEMPLATE_TARGET = "{project_target}"
+TEMPLATE_TARGET = "{target}"
 MARKDOWN_NEWLINE = "\n"
 
 def current_ts():
@@ -163,4 +163,6 @@ class ProjectsController():
             if uuid in self.processing_cmds:
                 return self.processing_cmds[uuid].get_status()
             return False
-
+        
+    def detete_command(self, uuid):
+        self.database.delete_project_cmd(uuid)
