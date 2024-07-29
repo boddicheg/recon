@@ -102,6 +102,18 @@ class DBSession:
         ))
         
         self.session.commit()
+
+    def get_command_data(self, uuid):
+        cmd = self.session.query(Commands).filter_by(uuid=uuid).first()
+        
+        result = {
+            "uuid": cmd.uuid,
+            "command": cmd.command,
+            "output": cmd.output,
+            "project_uuid": cmd.project_uuid
+        }
+    
+        return result
         
     def get_project_cmds(self, project_uuid):
         cmds = self.session.query(Commands).filter_by(project_uuid=project_uuid).all()

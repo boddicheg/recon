@@ -23,7 +23,7 @@ export interface NewProjectData {
 }
 
 interface ApiResponse {
-  success: boolean;
+  status: boolean;
   message: string;
 }
 
@@ -45,16 +45,15 @@ export const sendAddNewProject = async (
   return response.json();
 };
 
-export interface Commands {
+export interface CommandData {
   uuid: string;
   command: string;
-  output: string
 }
 
 export interface ProjectCommands {
   name: string;
   uuid: string;
-  commands: Commands[];
+  commands: CommandData[];
 }
 
 export const getProjectCommands = async (
@@ -147,3 +146,26 @@ export const deleteCommandData = async (
 
   return response.json();
 }
+
+
+export interface CommandOutput {
+  output: string
+}
+
+export const getCommandOutput = async (
+  uuid: string | undefined
+): Promise<ApiResponse> => {
+  if (!uuid) {
+    throw new Error("Empty uuid! Request to /api/command/<uuid>/output cancelled");
+  }
+
+  const response = await fetch("/api/command/" + uuid + "/output", {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+};

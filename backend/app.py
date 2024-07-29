@@ -59,14 +59,23 @@ def api_project_add_cmd(uuid):
 
 @app.route('/api/command/<uuid>/start', methods=['GET'])
 def api_project_cmd_start(uuid):
+    g_projects.start_execution(uuid)
     return jsonify({
         "message": f"{uuid} started successfully"
     }), 200
     
 @app.route('/api/command/<uuid>/stop', methods=['GET'])
 def api_project_cmd_stop(uuid):
+    g_projects.stop_execution(uuid)
     return jsonify({
         "message": f"{uuid} stopped successfully"
+    }), 200
+
+@app.route('/api/command/<uuid>/output', methods=['GET'])
+def api_project_cmd_output(uuid):
+    return jsonify({
+        "message": g_projects.get_output(uuid),
+        "status": g_projects.get_status(uuid)
     }), 200
 
 @app.route('/api/command/<uuid>', methods=['DELETE'])
