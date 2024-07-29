@@ -48,7 +48,7 @@ export const sendAddNewProject = async (
 export interface CommandData {
   uuid: string;
   command: string;
-  onMessage: () => void;
+  onDelete: () => void;
 }
 
 export interface ProjectCommands {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import Markdown from "react-markdown";
 import {
   PlayIcon,
   StopIcon,
@@ -19,7 +20,7 @@ import {
 const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
   const [output, setOutput] = useState<string>("");
   const [toggleStatus, setToggleStatus] = useState<boolean>(false);
-  const execStatus = useRef<boolean>(false);
+  const [execStatus, setExecStatus] = useState<boolean>(false);
   const intervalId = useRef<number>(0);
   const codeBoxRef = useRef<HTMLDivElement>(null);
 
@@ -28,13 +29,16 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
       const response = await getCommandOutput(uuid);
       console.log(response);
       setOutput(response.message);
-      execStatus.current = response.status;
+      setExecStatus(response.status);
 
       setToggleStatus(response.message != "");
 
       if (codeBoxRef.current) {
         codeBoxRef.current.scrollTop = 9999; // codeBoxRef.current.scrollHeight;
       }
+      if (!response.status)
+        clearInterval(intervalId.current)
+
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -45,7 +49,7 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
 
     const run = async () => {
       await dataFetch();
-      if (execStatus.current) intervalId.current = setInterval(dataFetch, 1000);
+      if (execStatus) intervalId.current = setInterval(dataFetch, 1000);
       else clearInterval(intervalId.current);
     };
 
@@ -63,17 +67,18 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
 
   const stopCommandProcessing = async (uuid: string | undefined) => {
     await stopCommandExecution(uuid);
+    setExecStatus(false)
     clearInterval(intervalId.current);
   };
 
   const deleteCommand = async (uuid: string | undefined) => {
     await deleteCommandData(uuid);
+    clearInterval(intervalId.current);
     onDelete();
   };
 
   const toggleOutput = () => {
     setToggleStatus(!toggleStatus);
-    console.log("Set toggle to ", toggleStatus);
   };
 
   return (
@@ -92,7 +97,7 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
         </div>
         <div className="flex-1 content-center  mr-4">
           <div className="flex justify-end gap-x-4">
-            {execStatus.current ? (
+            {execStatus ? (
               <ArrowPathIcon 
                 className="size-6 animate-spin"
               />
@@ -133,9 +138,8 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
                 ref={codeBoxRef}
                 className="max-h-96 text-sm overflow-auto bg-gray-800 text-white p-4 rounded-md mt-2"
               >
-                <pre>
-                  {/* <Markdown>{output}</Markdown> */}
-                  {output}
+                <pre className="text-wrap">
+                  <Markdown>{output}</Markdown>
                 </pre>
               </div>
             </div>

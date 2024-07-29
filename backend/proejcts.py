@@ -1,13 +1,16 @@
-from database.models import *
 import threading
-import time
 import datetime
 import atexit
 import subprocess
+import signal
+import os
+
+from database.models import *
 
 DB_PATH = "db.sqlite"
 TEMPLATE_TARGET = "{target}"
 MARKDOWN_NEWLINE = "\n"
+CACHE_FOLDER = "tmp"
 
 def current_ts():
     now = datetime.datetime.now()
@@ -15,12 +18,14 @@ def current_ts():
     return f"[{formatted_now}]"
 
 class ShellManager():
-    def __init__(self, uuid, cmd) -> None:
+    def __init__(self, root, uuid, cmd) -> None:
         self.lock = threading.Lock()
         self.cmd = cmd
+        self.root = root
         self.uuid = uuid
         self.output = ""
         self.running = False
+        self.process = None
         self.thread = threading.Thread(target=self.run_in_thread)
 
         atexit.register(self.stop)
@@ -47,30 +52,47 @@ class ShellManager():
             return
         
         try:
-            process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            # Change directory to CACHE_FOLDER in case some install commands
+            cache = self.root + "/" + CACHE_FOLDER
+            if not os.path.exists(cache):
+                os.mkdir(cache)
+            os.chdir(cache)
+
+            # Start subprocess
+            cmd_tokens = cmd.split(" ")
+            print(cmd_tokens)
+            self.process = subprocess.Popen(
+                cmd_tokens, 
+                stdin=subprocess.PIPE, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.STDOUT, 
+                text=True, 
+                start_new_session=True, 
+                encoding='utf-8', 
+            )
+
+            if not self.process:
+                with self.lock:
+                    self.output += f"{current_ts()} Unable to create subpocess!{MARKDOWN_NEWLINE}"
+                    self.running = False
+                return
             
             # Send the password to the process
             # if 'sudo' in command:
             #     if '-S' not in command:
             #         print(f"Pass -S along with sudo")
             #     process.stdin.write(self.psk + '\n')
-            # process.stdin.flush()
+
+            self.process.stdin.flush()
             
             # Read and print the output in real-time
             while True:
                 with self.lock:
                     if not self.running:
                         break
-                    
-                stderr_output = process.stderr.read()
-                if stderr_output:
-                    with self.lock:
-                        self.output += f"{current_ts()} {stderr_output.strip()}{MARKDOWN_NEWLINE}"
-                        self.running = False
-                    return
-                    
-                output = process.stdout.readline()
-                if output == '' and process.poll() is not None:
+                
+                output = self.process.stdout.readline()
+                if output == '' and self.process.poll() is not None:
                     break
                 if output:
                     with self.lock:
@@ -95,12 +117,15 @@ class ShellManager():
     def stop(self):
         with self.lock:
             self.running = False
+            if self.process:
+                self.process.send_signal(signal.SIGTERM)
         if self.thread.is_alive():
             self.thread.join()
 
 class ProjectsController():
     def __init__(self, root) -> None:
         self.database = DBSession(DB_PATH)
+        self.root = root
         self.lock = threading.Lock()
         self.processing_cmds = {}
         
@@ -140,7 +165,7 @@ class ProjectsController():
         cmd = str(command_data["command"]).replace(TEMPLATE_TARGET, parent_project["target"])
         # Run command
         with self.lock:
-            self.processing_cmds[uuid] = ShellManager(uuid, cmd)
+            self.processing_cmds[uuid] = ShellManager(self.root, uuid, cmd)
             self.processing_cmds[uuid].run()
 
     def stop_execution(self, uuid):
@@ -165,4 +190,5 @@ class ProjectsController():
             return False
         
     def detete_command(self, uuid):
+        self.stop_execution(uuid)
         self.database.delete_project_cmd(uuid)
