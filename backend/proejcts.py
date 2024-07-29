@@ -1,11 +1,18 @@
 from database.models import *
 import threading
 import time
+import datetime
 import atexit
+import subprocess
 
 DB_PATH = "db.sqlite"
-TEMPLATE_TARGET = "{target}"
+TEMPLATE_TARGET = "{project_target}"
 MARKDOWN_NEWLINE = "\n"
+
+def current_ts():
+    now = datetime.datetime.now()
+    formatted_now = now.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    return f"[{formatted_now}]"
 
 class ShellManager():
     def __init__(self, uuid, cmd) -> None:
@@ -27,25 +34,57 @@ class ShellManager():
             return self.running
 
     def run_in_thread(self):
+        cmd = ""
         with self.lock:
-            self.output += f"UUID: {self.uuid}{MARKDOWN_NEWLINE}"
+            self.output += f"{current_ts()} UUID: {self.uuid}{MARKDOWN_NEWLINE}"
+            cmd = self.cmd
+            self.output += f"{current_ts()} Input command: {cmd}{MARKDOWN_NEWLINE}"
 
-        count = 100
-        while True:
+        if cmd == "":
             with self.lock:
-                if not self.running:
+                self.output += f"{current_ts()} Empty input command!{MARKDOWN_NEWLINE}"
+                self.running = False
+            return
+        
+        try:
+            process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            
+            # Send the password to the process
+            # if 'sudo' in command:
+            #     if '-S' not in command:
+            #         print(f"Pass -S along with sudo")
+            #     process.stdin.write(self.psk + '\n')
+            # process.stdin.flush()
+            
+            # Read and print the output in real-time
+            while True:
+                with self.lock:
+                    if not self.running:
+                        break
+                    
+                stderr_output = process.stderr.read()
+                if stderr_output:
+                    with self.lock:
+                        self.output += f"{current_ts()} {stderr_output.strip()}{MARKDOWN_NEWLINE}"
+                        self.running = False
+                    return
+                    
+                output = process.stdout.readline()
+                if output == '' and process.poll() is not None:
                     break
-            if count <= 0:
-                break
-
-            time.sleep(1)
+                if output:
+                    with self.lock:
+                        self.output += f"{current_ts()} {output.strip()}{MARKDOWN_NEWLINE}"
+                    
             with self.lock:
-                self.output += f"Output: {count}{MARKDOWN_NEWLINE}"
-            count -= 1
+                self.output += f"{current_ts()} Finished processing!{MARKDOWN_NEWLINE}"
+                self.running = False
 
-        with self.lock:
-            self.output += f"Finished processing!{MARKDOWN_NEWLINE}"
-            self.running = False
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            with self.lock:
+                self.output += f"{current_ts()} An error occurred: {e}! {MARKDOWN_NEWLINE}"
+                self.running = False
     
     def run(self):
         with self.lock:
@@ -54,12 +93,10 @@ class ShellManager():
         self.thread.start()
 
     def stop(self):
-        print("stop +")
         with self.lock:
             self.running = False
         if self.thread.is_alive():
             self.thread.join()
-        print("stop -")
 
 class ProjectsController():
     def __init__(self, root) -> None:
