@@ -7,7 +7,9 @@ import {
   CommandLineIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  // DocumentDuplicateIcon,
+  ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import {
   startCommandExecution,
@@ -36,9 +38,7 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
       if (codeBoxRef.current) {
         codeBoxRef.current.scrollTop = 9999; // codeBoxRef.current.scrollHeight;
       }
-      if (!response.status)
-        clearInterval(intervalId.current)
-
+      if (!response.status) clearInterval(intervalId.current);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -67,7 +67,7 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
 
   const stopCommandProcessing = async (uuid: string | undefined) => {
     await stopCommandExecution(uuid);
-    setExecStatus(false)
+    setExecStatus(false);
     clearInterval(intervalId.current);
   };
 
@@ -81,6 +81,23 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
     setToggleStatus(!toggleStatus);
   };
 
+  const handleSaveToFile = () => {
+    const blob = new Blob([output], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = uuid + ".log";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleCopyToClipboard = async () => {
+    console.log(command);
+    await navigator.clipboard.writeText(command);
+  };
+
   return (
     <li className="gap-x-6 py-1 px-1 my-2 border border-slate-100 bg-slate-50 shadow-md rounded hover:shadow-lg cursor-pointer">
       <div className="flex gap-x-4 justify-between">
@@ -89,7 +106,13 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
         </div>
         <div className="flex-none min-w-0">
           <p className="text-lg leading-6 text-gray-900">
-            Command: <span className="font-bold">{command}</span>
+            Command:{" "}
+            <span
+              className="font-bold cursor-pointer"
+              onClick={() => handleCopyToClipboard()}
+            >
+              {command}{" "}
+            </span>
           </p>
           <p className="mt-1 truncate text-xs leading-5 text-gray-500">
             Added: 123
@@ -98,10 +121,8 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
         <div className="flex-1 content-center  mr-4">
           <div className="flex justify-end gap-x-4">
             {execStatus ? (
-              <ArrowPathIcon 
-                className="size-6 animate-spin"
-              />
-            ): null}
+              <ArrowPathIcon className="size-6 animate-spin" />
+            ) : null}
 
             <PlayIcon
               className="size-6 fill-green-400 stroke-green-600"
@@ -127,6 +148,10 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
                 onClick={() => toggleOutput()}
               />
             ) : null}
+            <ArrowDownTrayIcon
+              className="size-6"
+              onClick={() => handleSaveToFile()}
+            />
           </div>
         </div>
       </div>
