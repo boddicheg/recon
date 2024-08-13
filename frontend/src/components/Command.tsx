@@ -19,7 +19,7 @@ import {
   getCommandOutput,
 } from "../services/Api";
 
-const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
+const Command: React.FC<CommandData> = ({ uuid, command, title, onDelete }) => {
   const [output, setOutput] = useState<string>("");
   const [toggleStatus, setToggleStatus] = useState<boolean>(false);
   const [execStatus, setExecStatus] = useState<boolean>(false);
@@ -46,6 +46,7 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
 
   useEffect(() => {
     dataFetch();
+    console.log(title)
 
     const run = async () => {
       await dataFetch();
@@ -111,11 +112,11 @@ const Command: React.FC<CommandData> = ({ uuid, command, onDelete }) => {
               className="font-bold cursor-pointer"
               onClick={() => handleCopyToClipboard()}
             >
-              {command}{" "}
+              {title}{" "}
             </span>
           </p>
           <p className="mt-1 truncate text-xs leading-5 text-gray-500">
-            Added: 123
+            {command && command.split("\n").join(", ")}
           </p>
         </div>
         <div className="flex-1 content-center  mr-4">

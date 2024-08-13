@@ -4,8 +4,10 @@ import atexit
 import subprocess
 import signal
 import os
+import time
 
 from database.models import *
+from modules.commands import *
 
 DB_PATH = "db.sqlite"
 TEMPLATE_TARGET = "{target}"
@@ -43,7 +45,6 @@ class ShellManager():
         with self.lock:
             self.output += f"{current_ts()} UUID: {self.uuid}{MARKDOWN_NEWLINE}"
             cmd = self.cmd
-            self.output += f"{current_ts()} Input command: {cmd}{MARKDOWN_NEWLINE}"
 
         if cmd == "":
             with self.lock:
@@ -53,54 +54,75 @@ class ShellManager():
         
         try:
             # Change directory to CACHE_FOLDER in case some install commands
-            cache = self.root + "/" + CACHE_FOLDER
+            cache = self.root + "/../" + CACHE_FOLDER
+            print(cache, self.root)
             if not os.path.exists(cache):
                 os.mkdir(cache)
             os.chdir(cache)
 
             # Start subprocess
-            cmd_tokens = cmd.split(" ")
-            print(cmd_tokens)
-            self.process = subprocess.Popen(
-                cmd_tokens, 
-                stdin=subprocess.PIPE, 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.STDOUT, 
-                text=True, 
-                start_new_session=True, 
-                encoding='utf-8', 
-            )
+            cmds = []
+            if "\n" in cmd:
+                cmds = cmd.split("\n")
+            else:
+                cmds = [cmd]
 
-            if not self.process:
-                with self.lock:
-                    self.output += f"{current_ts()} Unable to create subpocess!{MARKDOWN_NEWLINE}"
-                    self.running = False
-                return
-            
-            # Send the password to the process
-            # if 'sudo' in command:
-            #     if '-S' not in command:
-            #         print(f"Pass -S along with sudo")
-            #     process.stdin.write(self.psk + '\n')
-
-            self.process.stdin.flush()
-            
-            # Read and print the output in real-time
-            while True:
-                with self.lock:
-                    if not self.running:
-                        break
+            for c in cmds:
+                start = time.time_ns() // 1_000_000
+                cmd_tokens = c.split(" ")
                 
-                output = self.process.stdout.readline()
-                if output == '' and self.process.poll() is not None:
-                    break
-                if output:
+                if is_non_shell_command(cmd_tokens):
+                    print("is_non_shell_command + ")
+                    result = process_non_shell(cmd_tokens)
                     with self.lock:
-                        self.output += f"{current_ts()} {output.strip()}{MARKDOWN_NEWLINE}"
+                        self.output += f"\n {current_ts()} ---> {" ".join(cmd_tokens)} <----{MARKDOWN_NEWLINE}\n"
+                        self.output += f"{current_ts()} {result.strip()}{MARKDOWN_NEWLINE}"
+                else:
+                    cmd_tokens = process_command(cmd_tokens)
+                    self.output += f"\n {current_ts()} ---> {" ".join(cmd_tokens)} <----{MARKDOWN_NEWLINE}\n"
+
+                    self.process = subprocess.Popen(
+                        cmd_tokens, 
+                        stdin=subprocess.PIPE, 
+                        stdout=subprocess.PIPE, 
+                        stderr=subprocess.STDOUT, 
+                        text=True, 
+                        start_new_session=True, 
+                        encoding='utf-8', 
+                    )
+
+                    if not self.process:
+                        with self.lock:
+                            self.output += f"{current_ts()} Unable to create subpocess!{MARKDOWN_NEWLINE}"
+                            self.running = False
+                        return
                     
-            with self.lock:
-                self.output += f"{current_ts()} Finished processing!{MARKDOWN_NEWLINE}"
-                self.running = False
+                    self.process.stdin.flush()
+                    
+                    # Read and print the output in real-time
+                    while True:
+                        with self.lock:
+                            if not self.running:
+                                break
+                        
+                        output = self.process.stdout.readline()
+                        if output == '' and self.process.poll() is not None:
+                            break
+                        if output:
+                            with self.lock:
+                                output = process_command_response(cmd_tokens, output)
+                                if output:
+                                    self.output += f"{current_ts()} {output.strip()}{MARKDOWN_NEWLINE}"
+                
+                elapsed = time.time_ns() // 1_000_000 - start
+                with self.lock:
+                    self.output += f"{current_ts()} Finished processing in {elapsed:.2f}ms!{MARKDOWN_NEWLINE}"
+                
+                if self.process:  
+                    self.process.kill()
+                    self.process = None
+                
+            self.running = False
 
         except Exception as e:
             print(f"An error occurred: {e}")
@@ -144,10 +166,12 @@ class ProjectsController():
             cmd["output"] = self.get_output(uuid)
         return commands
     
-    def add_command(self, uuid, command):
+    def add_command(self, uuid, command, title, is_global):
         return self.database.add_project_cmd({
             "command": command,
-            "project_uuid": uuid
+            "project_uuid": uuid,
+            "title": title,
+            "is_global": is_global
         })
 
     def start_execution(self, uuid):
@@ -192,3 +216,13 @@ class ProjectsController():
     def detete_command(self, uuid):
         self.stop_execution(uuid)
         self.database.delete_project_cmd(uuid)
+        
+    def get_global_cmds(self):
+        result = []
+        commands = self.database.get_global_cmds()
+        for cmd in commands:
+            result.append({
+                "label": cmd["command"],
+                "value": cmd["command"],
+            })
+        return result

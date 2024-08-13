@@ -43,16 +43,28 @@ def api_projects_add():
 def api_project_get_cmds(uuid):
     commands = g_projects.get_project_cmds(uuid)
     project = g_projects.get_project(uuid)
+    
+    if not project:
+        return {}
 
     return jsonify({
         "name": project["name"],
         "uuid": project["uuid"],
+        "target": project["target"],
         "commands": commands
     }), 200
 
 @app.route('/api/project/<uuid>', methods=['POST'])
 def api_project_add_cmd(uuid):
-    g_projects.add_command(uuid, request.get_json()["command"])
+    print(request.get_json())
+    if "title" in request.get_json().keys() and \
+        "command" in request.get_json().keys() and \
+        "is_global" in request.get_json().keys():
+        g_projects.add_command(uuid, 
+                               request.get_json()["command"],
+                               request.get_json()["title"],
+                               request.get_json()["is_global"])
+    
     return jsonify({
         "message": "Added successfully"
     }), 200
@@ -76,6 +88,13 @@ def api_project_cmd_output(uuid):
     return jsonify({
         "message": g_projects.get_output(uuid),
         "status": g_projects.get_status(uuid)
+    }), 200
+    
+@app.route('/api/command/global', methods=['GET'])
+def api_project_cmd_global():
+    cmds = g_projects.get_global_cmds()
+    return jsonify({
+        "commands": cmds
     }), 200
 
 @app.route('/api/command/<uuid>', methods=['DELETE'])

@@ -26,8 +26,10 @@ class Commands(Base):
     id = Column(Integer, primary_key=True)
     uuid = Column(String, nullable=False)
     project_uuid = Column(String, nullable=False)
+    title = Column(String, nullable=False)
     command = Column(String, nullable=False)
     output = Column(String, nullable=False)
+    is_global = Column(Boolean, nullable=False)
 # -----------------------------------------------------------------------------
     
 class DBSession:
@@ -65,6 +67,9 @@ class DBSession:
     def get_project_data(self, uuid):
         data = self.session.query(Projects).filter_by(uuid=uuid).first()
         
+        if not data:
+            return None
+        
         result = {
             "name": data.name,
             "uuid": data.uuid,
@@ -88,7 +93,7 @@ class DBSession:
         return result
 # -----------------------------------------------------------------------------
     def add_project_cmd(self, data):
-        keys = ["command", "project_uuid"]
+        keys = ["command", "project_uuid", "title", "is_global"]
         for k in keys:
             if k not in data.keys():
                 print(f"-> Can't find key {k} in params")
@@ -98,7 +103,9 @@ class DBSession:
             uuid=str(uuid.uuid4()),  
             project_uuid=data["project_uuid"],
             command=data["command"],
-            output="Test Output"
+            output="",
+            title=data["title"],
+            is_global=data["is_global"],
         ))
         
         self.session.commit()
@@ -110,7 +117,8 @@ class DBSession:
             "uuid": cmd.uuid,
             "command": cmd.command,
             "output": cmd.output,
-            "project_uuid": cmd.project_uuid
+            "project_uuid": cmd.project_uuid,
+            "title": cmd.title
         }
     
         return result
@@ -123,6 +131,7 @@ class DBSession:
                 "uuid": cmd.uuid,
                 "command": cmd.command,
                 "output": cmd.output,
+                "title": cmd.title
             })
         return result
     
@@ -131,3 +140,13 @@ class DBSession:
         if cms:
             self.session.delete(cms)
             self.session.commit()
+            
+    def get_global_cmds(self):
+        cmds = self.session.query(Commands).filter_by(is_global=True).all()
+        result = []
+        for cmd in cmds:
+            result.append({
+                "command": cmd.command,
+                "title": cmd.title
+            })
+        return result

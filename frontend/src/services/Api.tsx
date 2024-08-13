@@ -48,12 +48,14 @@ export const sendAddNewProject = async (
 export interface CommandData {
   uuid: string;
   command: string;
+  title: string;
   onDelete: () => void;
 }
 
 export interface ProjectCommands {
   name: string;
   uuid: string;
+  target: string;
   commands: CommandData[];
 }
 
@@ -77,14 +79,17 @@ export const getProjectCommands = async (
 
 export const addProjectCommand = async (
   uuid: string | undefined,
-  command: string
+  command: string,
+  title: string,
+  is_global: boolean
 ): Promise<ApiResponse> => {
+  console.log({ command: command, title: title })
   const response = await fetch("/api/project/" + uuid, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({command: command}),
+    body: JSON.stringify({ command: command, title: title, is_global:is_global }),
   });
 
   if (!response.ok) {
@@ -110,7 +115,7 @@ export const startCommandExecution = async (
   }
 
   return response.json();
-}
+};
 
 export const stopCommandExecution = async (
   uuid: string | undefined
@@ -128,7 +133,7 @@ export const stopCommandExecution = async (
   }
 
   return response.json();
-}
+};
 
 export const deleteCommandData = async (
   uuid: string | undefined
@@ -146,21 +151,44 @@ export const deleteCommandData = async (
   }
 
   return response.json();
-}
-
+};
 
 export interface CommandOutput {
-  output: string
+  output: string;
 }
 
 export const getCommandOutput = async (
   uuid: string | undefined
 ): Promise<ApiResponse> => {
   if (!uuid) {
-    throw new Error("Empty uuid! Request to /api/command/<uuid>/output cancelled");
+    throw new Error(
+      "Empty uuid! Request to /api/command/<uuid>/output cancelled"
+    );
   }
 
   const response = await fetch("/api/command/" + uuid + "/output", {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+
+  return response.json();
+};
+
+
+export interface SelectOption {
+  label: string;
+  value: string;
+}
+
+export interface GlobalCommands {
+  commands: SelectOption[];
+}
+
+export const sendGetPredefinedCommands = async (): Promise<GlobalCommands> => {
+  const response = await fetch("/api/command/global", {
     method: "GET",
   });
 
